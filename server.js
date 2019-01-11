@@ -3,6 +3,7 @@ var bodyParser = require("body-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 var path = require("path");
+var axios = require("axios");
 
 // Requiring Note and Article models
 var Note = require("./models/Note.js");
@@ -76,9 +77,56 @@ app.get("/saved", function(req, res) {
     res.render("saved", hbsObject);
   });
 });
+//
+  app.get("/scrape",function(req,res){
+    axios.get("https://www.nytimes.com/").then(function(response){
+      var $=cheerio.load(response.data);
+      var results=[];
+  //    <div class="css-6p6lnl"><a href="https://www.nytimes.com/2019/01/10/us/politics/border-wall-government-shutdown.html?action=click&amp;module=Top%20Stories&amp;pgtype=Homepage"><div class="css-1j836f9 esl82me3"><div class="css-3w1yun esl82me0">U.S.-Mexico Border</div><h2 class="css-bzeb53 esl82me2"><span class="ghost" aria-hidden="true" style="position: absolute; left: 0px; visibility: hidden;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span><span class="balancedHeadline" style="display: inline-block; max-width: 165.773px;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span></h2></div>
+  //<ul class="css-1rrs2s3 e1n8kpyg1"><li>President Trump traveled to the border to warn of crime and chaos as the partial government shutdown reached a milestone Day 21.</li><li>White House officials considered diverting aid from Puerto Rico, Florida, Texas and California to build a border wall under an emergency declaration.</li></ul></a><div class="css-194w6rb e1m7ci270"><div class="css-na047m e1m7ci271"><span class="css-17h6617 e1c8ga110"><time aria-label="7 hours ago" class="">7h ago</time></span></div></div></div>
+     // <h2 class="css-bzeb53 esl82me2"><span class="ghost" aria-hidden="true" style="position: absolute; left: 0px; visibility: hidden;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span><span class="balancedHeadline" style="display: inline-block; max-width: 165.773px;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span></h2>
+    //  $("article.css-8atqhb").each(function(i,element){
+   //   $("h2.css-bzeb53.esl82me2").each(function(i,element){
+    $("div.css-6p6lnl").each(function(i,element){
+        console.log("***********ARTICLE *******");
+        console.log(element);
+        console.log("***********ARTICLE END*******");
+        var title=$(element)
+            .children()
+            .text();
+        var link="https://www.nytimes.com"+$(element)
+            .children("a").attr("href");
+        var summary=$(element)
+            .children(".summary").text();
+        results.push({title: title, link: link,summary: summary});
 
+        var entry = new Article(results[i]);
+
+      // Now, save that entry to the db
+        entry.save(function(err, doc) {
+          // Log any errors
+          if (err) {
+            console.log(err);
+          }
+          // Or log the doc
+          else {
+            console.log(doc);
+          }
+        });
+
+
+      });
+      console.log(results);
+
+
+
+
+  });
+    
+
+  })
 // A GET request to scrape the echojs website
-/* app.get("/scrape", function(req, res) {
+/*  app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with request
   request("https://www.nytimes.com/", function(error, response, html) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
@@ -87,12 +135,10 @@ app.get("/saved", function(req, res) {
     console.log("response END *****************");
     var $ = cheerio.load(html);
     // Now, we grab every h2 within an article tag, and do the following:
-    $("article").each(function(i, element) {
+//    $("h2.css-6h3ud0.esl82me2").each(function(i, element) {
+  $("article.css-8atqhb").each(function(i, element) {
 
-      // Save an empty result object
-      var result = {};
-
-      // Add the title and summary of every link, and save them as properties of the result object
+        // Add the title and summary of every link, and save them as properties of the result object
       result.title = $(this).children("h2").text();
       result.summary = $(this).children(".summary").text();
       result.link = $(this).children("h2").children("a").attr("href");
@@ -121,7 +167,7 @@ app.get("/saved", function(req, res) {
 
   });
   // Tell the browser that we finished scraping the text
-}); */
+});  */
 /* 
 app.get("/scrape", (req, res) => {
   request("https://news.ycombinator.com/", (error, response, html) => {

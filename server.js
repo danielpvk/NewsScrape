@@ -82,11 +82,6 @@ app.get("/saved", function(req, res) {
     axios.get("https://www.nytimes.com/").then(function(response){
       var $=cheerio.load(response.data);
       var results=[];
-  //    <div class="css-6p6lnl"><a href="https://www.nytimes.com/2019/01/10/us/politics/border-wall-government-shutdown.html?action=click&amp;module=Top%20Stories&amp;pgtype=Homepage"><div class="css-1j836f9 esl82me3"><div class="css-3w1yun esl82me0">U.S.-Mexico Border</div><h2 class="css-bzeb53 esl82me2"><span class="ghost" aria-hidden="true" style="position: absolute; left: 0px; visibility: hidden;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span><span class="balancedHeadline" style="display: inline-block; max-width: 165.773px;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span></h2></div>
-  //<ul class="css-1rrs2s3 e1n8kpyg1"><li>President Trump traveled to the border to warn of crime and chaos as the partial government shutdown reached a milestone Day 21.</li><li>White House officials considered diverting aid from Puerto Rico, Florida, Texas and California to build a border wall under an emergency declaration.</li></ul></a><div class="css-194w6rb e1m7ci270"><div class="css-na047m e1m7ci271"><span class="css-17h6617 e1c8ga110"><time aria-label="7 hours ago" class="">7h ago</time></span></div></div></div>
-     // <h2 class="css-bzeb53 esl82me2"><span class="ghost" aria-hidden="true" style="position: absolute; left: 0px; visibility: hidden;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span><span class="balancedHeadline" style="display: inline-block; max-width: 165.773px;">White House Considers Diverting Aid From Disaster Relief to Build Wall</span></h2>
-    //  $("article.css-8atqhb").each(function(i,element){
-   //   $("h2.css-bzeb53.esl82me2").each(function(i,element){
     $("div.css-6p6lnl").each(function(i,element){
         console.log("***********ARTICLE *******");
         console.log(element);
@@ -96,140 +91,30 @@ app.get("/saved", function(req, res) {
             .text();
         var link="https://www.nytimes.com"+$(element)
             .children("a").attr("href");
-        var summary=$(element)
-            .children(".summary").text();
-        results.push({title: title, link: link,summary: summary});
 
-        var entry = new Article(results[i]);
+        results.push({title: title, link: link});
+
+        var note = new Article(results[i]);
 
       // Now, save that entry to the db
-        entry.save(function(err, doc) {
+        note.save(function(err, doc) {
           // Log any errors
           if (err) {
             console.log(err);
           }
           // Or log the doc
           else {
+            console.log("*****DATA ADDED*****");
             console.log(doc);
           }
         });
 
 
       });
-      console.log(results);
-
-
-
+      console.log(results[i]);
 
   });
-    
-
-  })
-// A GET request to scrape the echojs website
-/*  app.get("/scrape", function(req, res) {
-  // First, we grab the body of the html with request
-  request("https://www.nytimes.com/", function(error, response, html) {
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
-    console.log("********response******");
-    console.log(html);
-    console.log("response END *****************");
-    var $ = cheerio.load(html);
-    // Now, we grab every h2 within an article tag, and do the following:
-//    $("h2.css-6h3ud0.esl82me2").each(function(i, element) {
-  $("article.css-8atqhb").each(function(i, element) {
-
-        // Add the title and summary of every link, and save them as properties of the result object
-      result.title = $(this).children("h2").text();
-      result.summary = $(this).children(".summary").text();
-      result.link = $(this).children("h2").children("a").attr("href");
-      console.log("***RESULT****");
-      console.log("");
-      console.log(result);
-      console.log("");console.log("");console.log("");
-      // Using our Article model, create a new entry
-      // This effectively passes the result object to the entry (and the title and link)
-      var entry = new Article(result);
-
-      // Now, save that entry to the db
-      entry.save(function(err, doc) {
-        // Log any errors
-        if (err) {
-          console.log(err);
-        }
-        // Or log the doc
-        else {
-          console.log(doc);
-        }
-      });
-
-    });
-        res.send("Scrape Complete");
-
-  });
-  // Tell the browser that we finished scraping the text
-});  */
-/* 
-app.get("/scrape", (req, res) => {
-  request("https://news.ycombinator.com/", (error, response, html) => {
-      let $ = cheerio.load(html);
-      console.log("********response******");
-      console.log(html);
-      console.log("response END *****************");
-      $("td[class=title]").each(function(i, element) {
-          let result = {};
-          result.title = $(this).children("a").text();
-          result.link = $(this).children("a").attr("href");
-          console.log("***RESULT****");
-          console.log("");
-          console.log(result);
-          console.log("");console.log("");console.log("");
-
-          if (result.title != "") {
-              let entry = new Article(result);
-              entry.save((err, doc) => {
-                  if (err) {
-                      console.log(err);
-                  } else {
-                      console.log(doc);
-                  }
-              });
-          }
-      });
-  });
-  res.send("Scrape Complete");
 });
- */
-
-/* app.get("/scrape", (req, res) => {
-  request("https://www.reforma.com", (error, response, html) => {
-      let $ = cheerio.load(html);
-      console.log("********response******");
-      console.log(html);
-      console.log("response END *****************");
-      $("ligaonclick").each(function(i, element) {
-          let result = {};
-          result.title = $(this).children("a").text();
-          result.link = $(this).children("a").attr("href");
-          console.log("***RESULT****");
-          console.log("");
-          console.log(result);
-          console.log("");console.log("");console.log("");
-
-          if (result.title != "") {
-              let entry = new Article(result);
-              entry.save((err, doc) => {
-                  if (err) {
-                      console.log(err);
-                  } else {
-                      console.log(doc);
-                  }
-              });
-          }
-      });
-  });
-  res.send("Scrape Complete");
-}); */
-
 
 // This will get the articles we scraped from the mongoDB
 app.get("/articles", function(req, res) {
